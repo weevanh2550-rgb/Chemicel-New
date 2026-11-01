@@ -1,0 +1,6 @@
+{
+  "name": "BoilerChemical — ระบบจัดการสารเคมี",
+  "description": "แอปพลิเคชันสำหรับจัดการสารเคมีแผนกบอยเลอร์ (TCE-2138, Polytreat-SRB, MCC-N) พัฒนาโดย Weevanh Khambounheuang",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

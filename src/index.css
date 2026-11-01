@@ -1,0 +1,249 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body {
+    font-family: 'IBM Plex Sans Thai', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0f172a;
+    background-color: #f8fafc;
+    -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent drag & link preview callout on images, links and buttons */
+  img,
+  button,
+  a {
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+  }
+
+  input,
+  textarea,
+  select {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Plus Jakarta Sans', 'IBM Plex Sans Thai', sans-serif;
+    text-wrap: balance;
+  }
+
+  .font-mono-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmerSweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes ringSpinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: ringSpinSlow 12s linear infinite;
+}
+
+@keyframes pulseRadarRing {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.animate-radar-ring {
+  animation: pulseRadarRing 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes logoAuraPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 35px rgba(14, 165, 233, 0.45);
+  }
+  50% {
+    transform: scale(1.025);
+    box-shadow: 0 0 55px rgba(56, 189, 248, 0.7);
+  }
+}
+
+.animate-logo-aura {
+  animation: logoAuraPulse 3s ease-in-out infinite;
+}
+
+@keyframes ringSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-reverse-slow {
+  animation: ringSpinReverse 16s linear infinite;
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-40px) scale(0.8);
+    opacity: 0.1;
+  }
+}
+
+.animate-float-particle {
+  animation: floatParticle 4s ease-in-out infinite;
+}
+
+@keyframes twinkleGlimmer {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.65) rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.3) rotate(90deg);
+  }
+}
+
+.animate-twinkle {
+  animation: twinkleGlimmer 2.8s ease-in-out infinite;
+}
+
+@keyframes ambientSway1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(30px, -25px) scale(1.2);
+    opacity: 0.45;
+  }
+}
+
+.animate-ambient-sway-1 {
+  animation: ambientSway1 7s ease-in-out infinite;
+}
+
+@keyframes ambientSway2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate(-35px, 30px) scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+.animate-ambient-sway-2 {
+  animation: ambientSway2 8s ease-in-out infinite;
+}
+
+@keyframes rippleWaveSlow {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-ripple-wave {
+  animation: rippleWaveSlow 5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(20px) scale(0.65);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  75% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-90px) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.animate-chem-bubble {
+  animation: bubbleRise 4.5s ease-in infinite;
+}
+
+@keyframes chemHexFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-16px) rotate(18deg);
+    opacity: 0.55;
+  }
+}
+
+.animate-chem-hex {
+  animation: chemHexFloat 6s ease-in-out infinite;
+}
+
+
+

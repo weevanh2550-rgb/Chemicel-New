@@ -1,0 +1,387 @@
+{
+  "entities": {
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Authorized system administrator for the Boiler Department application.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified email address of the administrator.",
+          "minLength": 3,
+          "maxLength": 160
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when admin record was created."
+        }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "SystemSetting": {
+      "title": "SystemSetting",
+      "description": "Global configuration and feature permission toggles for the Boiler Chemical System.",
+      "type": "object",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "Display name of the application.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "appVersion": {
+          "type": "string",
+          "description": "Semantic version string of the application.",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-zA-Z0-9._\\- ]+$"
+        },
+        "developerName": {
+          "type": "string",
+          "description": "Name of the developer or engineering team.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "departmentName": {
+          "type": "string",
+          "description": "Name of the boiler engineering department.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "announcement": {
+          "type": "string",
+          "description": "Operational notice shown on the home dashboard.",
+          "maxLength": 500
+        },
+        "gasWebAppUrl": {
+          "type": "string",
+          "description": "Optional Google Apps Script Web App URL for Google Sheets synchronization.",
+          "maxLength": 500
+        },
+        "enableCalculation": {
+          "type": "boolean",
+          "description": "Whether the chemical calculation module is enabled for operators."
+        },
+        "enableHistory": {
+          "type": "boolean",
+          "description": "Whether the calculation history module is enabled for operators."
+        },
+        "enableChemicals": {
+          "type": "boolean",
+          "description": "Whether the chemical specification database is enabled for operators."
+        },
+        "allowUserDeleteHistory": {
+          "type": "boolean",
+          "description": "Whether standard operators can delete calculation records."
+        },
+        "enableBoiler12": {
+          "type": "boolean",
+          "description": "Whether Boiler #1-2 is active for chemical calculation."
+        },
+        "enableBoiler3": {
+          "type": "boolean",
+          "description": "Whether Boiler #3 is active for chemical calculation."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "UID of the user who last updated the settings.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp."
+        }
+      },
+      "required": [
+        "appName",
+        "appVersion",
+        "developerName",
+        "departmentName",
+        "announcement",
+        "gasWebAppUrl",
+        "enableCalculation",
+        "enableHistory",
+        "enableChemicals",
+        "allowUserDeleteHistory",
+        "enableBoiler12",
+        "enableBoiler3",
+        "updatedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChemicalItem": {
+      "title": "ChemicalItem",
+      "description": "Chemical formula and dosing divisor specification used in boiler water treatment.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Chemical code identifier (e.g., TCE-2138, Polytreat-SRB, MCC-N).",
+          "minLength": 1,
+          "maxLength": 60,
+          "pattern": "^[a-zA-Z0-9_\\- ]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full descriptive name of the chemical.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "divisor": {
+          "type": "number",
+          "description": "Divisor factor for dosing calculation (e.g., 8 for TCE-2138, 4 for Polytreat-SRB and MCC-N)."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Measurement unit (e.g., kg, L, g).",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "targetBoiler": {
+          "type": "string",
+          "description": "Target boiler unit applicability.",
+          "enum": ["ALL", "BOILER_1_2", "BOILER_3"],
+          "maxLength": 30
+        },
+        "category": {
+          "type": "string",
+          "description": "Functional classification of the chemical.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "description": "Usage instructions and dosing details.",
+          "maxLength": 500
+        },
+        "standardRange": {
+          "type": "string",
+          "description": "Recommended control parameter range.",
+          "maxLength": 100
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the chemical is active in the calculator."
+        },
+        "departmentScope": {
+          "type": "string",
+          "description": "Organizational scope identifier for secure query filtering.",
+          "enum": ["BOILER_DEPT"],
+          "maxLength": 30
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the creator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update."
+        }
+      },
+      "required": [
+        "code",
+        "name",
+        "divisor",
+        "unit",
+        "targetBoiler",
+        "category",
+        "description",
+        "standardRange",
+        "isActive",
+        "departmentScope",
+        "authorId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CalculationLog": {
+      "title": "CalculationLog",
+      "description": "Recorded chemical dosing calculation for Boiler #1-2 or Boiler #3.",
+      "type": "object",
+      "properties": {
+        "boilerId": {
+          "type": "string",
+          "description": "Selected boiler identifier.",
+          "enum": ["BOILER_1_2", "BOILER_3"],
+          "maxLength": 30
+        },
+        "boilerLabel": {
+          "type": "string",
+          "description": "Human-readable boiler name.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "shift": {
+          "type": "string",
+          "description": "Operational work shift.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "operatorName": {
+          "type": "string",
+          "description": "Name of the operator performing the calculation.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "tce2138Input": {
+          "type": "number",
+          "description": "Input quantity for TCE-2138."
+        },
+        "tce2138Divisor": {
+          "type": "number",
+          "description": "Divisor applied to TCE-2138 (default 8)."
+        },
+        "tce2138Result": {
+          "type": "number",
+          "description": "Calculated dosing result for TCE-2138."
+        },
+        "polytreatInput": {
+          "type": "number",
+          "description": "Input quantity for Polytreat-SRB."
+        },
+        "polytreatDivisor": {
+          "type": "number",
+          "description": "Divisor applied to Polytreat-SRB (default 4)."
+        },
+        "polytreatResult": {
+          "type": "number",
+          "description": "Calculated dosing result for Polytreat-SRB."
+        },
+        "mccnInput": {
+          "type": "number",
+          "description": "Input quantity for MCC-N."
+        },
+        "mccnDivisor": {
+          "type": "number",
+          "description": "Divisor applied to MCC-N (default 4)."
+        },
+        "mccnResult": {
+          "type": "number",
+          "description": "Calculated dosing result for MCC-N."
+        },
+        "customSummary": {
+          "type": "string",
+          "description": "Summary of any additional custom chemicals calculated in the batch.",
+          "maxLength": 600
+        },
+        "note": {
+          "type": "string",
+          "description": "Operator remarks or water quality notes.",
+          "maxLength": 500
+        },
+        "dedupSignature": {
+          "type": "string",
+          "description": "Deterministic signature to prevent duplicate calculation entries.",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-zA-Z0-9_.\\-:]+$"
+        },
+        "status": {
+          "type": "string",
+          "description": "Record lifecycle state.",
+          "enum": ["recorded", "verified", "archived"],
+          "maxLength": 30
+        },
+        "departmentScope": {
+          "type": "string",
+          "description": "Department scope for query enforcement.",
+          "enum": ["BOILER_DEPT"],
+          "maxLength": 30
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the recording operator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when record was last updated."
+        }
+      },
+      "required": [
+        "boilerId",
+        "boilerLabel",
+        "shift",
+        "operatorName",
+        "tce2138Input",
+        "tce2138Divisor",
+        "tce2138Result",
+        "polytreatInput",
+        "polytreatDivisor",
+        "polytreatResult",
+        "mccnInput",
+        "mccnDivisor",
+        "mccnResult",
+        "customSummary",
+        "note",
+        "dedupSignature",
+        "status",
+        "departmentScope",
+        "authorId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "#/entities/AdminRecord"
+      },
+      "description": "Stores verified administrator accounts for RBAC validation."
+    },
+    "/settings/{settingId}": {
+      "schema": {
+        "$ref": "#/entities/SystemSetting"
+      },
+      "description": "Stores global Boiler Department application configuration and permission toggles."
+    },
+    "/chemicals/{chemicalId}": {
+      "schema": {
+        "$ref": "#/entities/ChemicalItem"
+      },
+      "description": "Stores chemical definitions and divisor formulas for Boiler #1-2 and Boiler #3."
+    },
+    "/calculations/{calcId}": {
+      "schema": {
+        "$ref": "#/entities/CalculationLog"
+      },
+      "description": "Stores calculation history logs for TCE-2138, Polytreat-SRB, MCC-N, and custom chemicals."
+    }
+  }
+}

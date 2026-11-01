@@ -1,0 +1,318 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Primitive Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'boilerchemical49@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 3. Entity Validation Blueprints (Anti-Update-Gap)
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'createdAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 160 &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidSystemSetting(data) {
+      return data.keys().hasAll([
+          'appName',
+          'appVersion',
+          'developerName',
+          'departmentName',
+          'announcement',
+          'gasWebAppUrl',
+          'enableCalculation',
+          'enableHistory',
+          'enableChemicals',
+          'allowUserDeleteHistory',
+          'enableBoiler12',
+          'enableBoiler3',
+          'updatedBy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'appName',
+          'appVersion',
+          'developerName',
+          'departmentName',
+          'announcement',
+          'gasWebAppUrl',
+          'enableCalculation',
+          'enableHistory',
+          'enableChemicals',
+          'allowUserDeleteHistory',
+          'enableBoiler12',
+          'enableBoiler3',
+          'updatedBy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.appName is string && data.appName.size() >= 1 && data.appName.size() <= 120 &&
+        data.appVersion is string && data.appVersion.size() >= 1 && data.appVersion.size() <= 40 && data.appVersion.matches('^[a-zA-Z0-9._\\- ]+$') &&
+        data.developerName is string && data.developerName.size() >= 1 && data.developerName.size() <= 120 &&
+        data.departmentName is string && data.departmentName.size() >= 1 && data.departmentName.size() <= 120 &&
+        data.announcement is string && data.announcement.size() <= 500 &&
+        data.gasWebAppUrl is string && data.gasWebAppUrl.size() <= 500 &&
+        data.enableCalculation is bool &&
+        data.enableHistory is bool &&
+        data.enableChemicals is bool &&
+        data.allowUserDeleteHistory is bool &&
+        data.enableBoiler12 is bool &&
+        data.enableBoiler3 is bool &&
+        data.updatedBy is string && data.updatedBy.size() >= 1 && data.updatedBy.size() <= 128 && data.updatedBy.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.updatedBy == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidChemicalItem(data) {
+      return data.keys().hasAll([
+          'code',
+          'name',
+          'divisor',
+          'unit',
+          'targetBoiler',
+          'category',
+          'description',
+          'standardRange',
+          'isActive',
+          'departmentScope',
+          'authorId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'code',
+          'name',
+          'divisor',
+          'unit',
+          'targetBoiler',
+          'category',
+          'description',
+          'standardRange',
+          'isActive',
+          'departmentScope',
+          'authorId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.code is string && data.code.size() >= 1 && data.code.size() <= 60 && data.code.matches('^[a-zA-Z0-9_\\- ]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.divisor is number && data.divisor > 0 && data.divisor <= 10000 &&
+        data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 30 &&
+        data.targetBoiler is string && data.targetBoiler.size() <= 30 && (data.targetBoiler == 'ALL' || data.targetBoiler == 'BOILER_1_2' || data.targetBoiler == 'BOILER_3') &&
+        data.category is string && data.category.size() >= 1 && data.category.size() <= 80 &&
+        data.description is string && data.description.size() <= 500 &&
+        data.standardRange is string && data.standardRange.size() <= 100 &&
+        data.isActive is bool &&
+        data.departmentScope is string && data.departmentScope.size() <= 30 && data.departmentScope == 'BOILER_DEPT' &&
+        data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidCalculationLog(data) {
+      return data.keys().hasAll([
+          'boilerId',
+          'boilerLabel',
+          'shift',
+          'operatorName',
+          'tce2138Input',
+          'tce2138Divisor',
+          'tce2138Result',
+          'polytreatInput',
+          'polytreatDivisor',
+          'polytreatResult',
+          'mccnInput',
+          'mccnDivisor',
+          'mccnResult',
+          'customSummary',
+          'note',
+          'dedupSignature',
+          'status',
+          'departmentScope',
+          'authorId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'boilerId',
+          'boilerLabel',
+          'shift',
+          'operatorName',
+          'tce2138Input',
+          'tce2138Divisor',
+          'tce2138Result',
+          'polytreatInput',
+          'polytreatDivisor',
+          'polytreatResult',
+          'mccnInput',
+          'mccnDivisor',
+          'mccnResult',
+          'customSummary',
+          'note',
+          'dedupSignature',
+          'status',
+          'departmentScope',
+          'authorId',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.boilerId is string && data.boilerId.size() <= 30 && (data.boilerId == 'BOILER_1_2' || data.boilerId == 'BOILER_3') &&
+        data.boilerLabel is string && data.boilerLabel.size() >= 1 && data.boilerLabel.size() <= 60 &&
+        data.shift is string && data.shift.size() >= 1 && data.shift.size() <= 60 &&
+        data.operatorName is string && data.operatorName.size() >= 1 && data.operatorName.size() <= 100 &&
+        data.tce2138Input is number && data.tce2138Input >= 0 && data.tce2138Input <= 100000 &&
+        data.tce2138Divisor is number && data.tce2138Divisor > 0 && data.tce2138Divisor <= 10000 &&
+        data.tce2138Result is number && data.tce2138Result >= 0 && data.tce2138Result <= 100000 &&
+        data.polytreatInput is number && data.polytreatInput >= 0 && data.polytreatInput <= 100000 &&
+        data.polytreatDivisor is number && data.polytreatDivisor > 0 && data.polytreatDivisor <= 10000 &&
+        data.polytreatResult is number && data.polytreatResult >= 0 && data.polytreatResult <= 100000 &&
+        data.mccnInput is number && data.mccnInput >= 0 && data.mccnInput <= 100000 &&
+        data.mccnDivisor is number && data.mccnDivisor > 0 && data.mccnDivisor <= 10000 &&
+        data.mccnResult is number && data.mccnResult >= 0 && data.mccnResult <= 100000 &&
+        data.customSummary is string && data.customSummary.size() <= 600 &&
+        data.note is string && data.note.size() <= 500 &&
+        data.dedupSignature is string && data.dedupSignature.size() >= 1 && data.dedupSignature.size() <= 160 && data.dedupSignature.matches('^[a-zA-Z0-9_.\\-:]+$') &&
+        data.status is string && data.status.size() <= 30 && (data.status == 'recorded' || data.status == 'verified' || data.status == 'archived') &&
+        data.departmentScope is string && data.departmentScope.size() <= 30 && data.departmentScope == 'BOILER_DEPT' &&
+        data.authorId is string && data.authorId.size() >= 1 && data.authorId.size() <= 128 && data.authorId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules
+    match /admins/{adminId} {
+      // PII Isolation: Only owner or verified admin can read individual admin record; no list allowed
+      allow get: if isSignedIn() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(adminId) && isValidAdminRecord(incoming()) &&
+        incoming().uid == adminId &&
+        incoming().createdAt == request.time &&
+        isAdmin();
+      allow update: if false;
+      allow delete: if isVerifiedUser() && isValidId(adminId) && isAdmin();
+    }
+
+    match /settings/{settingId} {
+      // Single-document configuration read via get
+      allow get: if isSignedIn() && isValidId(settingId) && existing().departmentName is string;
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(settingId) && isValidSystemSetting(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isVerifiedUser() && isValidId(settingId) && isValidSystemSetting(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly([
+            'appName',
+            'appVersion',
+            'developerName',
+            'departmentName',
+            'announcement',
+            'gasWebAppUrl',
+            'enableCalculation',
+            'enableHistory',
+            'enableChemicals',
+            'allowUserDeleteHistory',
+            'enableBoiler12',
+            'enableBoiler3',
+            'updatedBy',
+            'updatedAt'
+          ])
+        );
+      allow delete: if false;
+    }
+
+    match /chemicals/{chemicalId} {
+      allow get: if isSignedIn() && isValidId(chemicalId) && existing().departmentScope == 'BOILER_DEPT';
+      allow list: if isSignedIn() && existing().departmentScope == 'BOILER_DEPT';
+      allow create: if isVerifiedUser() && isValidId(chemicalId) && isValidChemicalItem(incoming()) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isVerifiedUser() && isValidId(chemicalId) && isValidChemicalItem(incoming()) &&
+        incoming().authorId == existing().authorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().departmentScope == existing().departmentScope &&
+        incoming().updatedAt == request.time && (
+          isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly([
+            'code',
+            'name',
+            'divisor',
+            'unit',
+            'targetBoiler',
+            'category',
+            'description',
+            'standardRange',
+            'isActive',
+            'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(chemicalId) && isAdmin();
+    }
+
+    match /calculations/{calcId} {
+      allow get: if isSignedIn() && isValidId(calcId) && existing().departmentScope == 'BOILER_DEPT';
+      allow list: if isSignedIn() && existing().departmentScope == 'BOILER_DEPT';
+      allow create: if isVerifiedUser() && isValidId(calcId) && isValidCalculationLog(incoming()) &&
+        incoming().authorId == request.auth.uid &&
+        incoming().status == 'recorded' &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(calcId) && isValidCalculationLog(incoming()) &&
+        incoming().authorId == existing().authorId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().departmentScope == existing().departmentScope &&
+        incoming().boilerId == existing().boilerId &&
+        incoming().dedupSignature == existing().dedupSignature &&
+        incoming().updatedAt == request.time && (
+          isAdmin() || (
+            // Terminal State Lock: Non-admins cannot update once archived
+            existing().status != 'archived' && (
+              // Action 1: Creator updates note or status
+              (existing().authorId == request.auth.uid &&
+                incoming().diff(existing()).affectedKeys().hasOnly(['note', 'status', 'updatedAt']))
+            )
+          )
+        );
+      allow delete: if isVerifiedUser() && isValidId(calcId) && (
+        isAdmin() || (existing().authorId == request.auth.uid && existing().status != 'archived')
+      );
+    }
+  }
+}
