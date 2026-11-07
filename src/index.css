@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html,
   body {
@@ -11,6 +13,13 @@
     text-size-adjust: 100%;
     -webkit-user-select: none;
     user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.dark,
+  html.dark body {
+    color: #f1f5f9;
+    background-color: #020617;
   }
 
   button, a {

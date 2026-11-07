@@ -1,6 +1,10 @@
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { initSystemThemeSync } from './utils/theme';
+
+// Synchronize theme dynamically with device preferences (Dark / Light Mode)
+initSystemThemeSync();
 
 // Prevent pinch-zoom, double-tap zoom, and gesture zoom across all pages and functions
 if (typeof document !== 'undefined') {

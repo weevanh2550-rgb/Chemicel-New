@@ -102,29 +102,37 @@ export function formatCalculationShareText(record: CalculationHistoryRecord): st
     'วันศุกร์',
     'วันเสาร์',
   ];
-  const dayName = daysOfWeek[dateObj.getDay()] || 'วันนี้';
+  const thaiMonths = [
+    'มกราคม',
+    'กุมภาพันธ์',
+    'มีนาคม',
+    'เมษายน',
+    'พฤษภาคม',
+    'มิถุนายน',
+    'กรกฎาคม',
+    'สิงหาคม',
+    'กันยายน',
+    'ตุลาคม',
+    'พฤศจิกายน',
+    'ธันวาคม',
+  ];
 
-  const dateFormatted = dateObj.toLocaleDateString('th-TH', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-  const timeFormatted = dateObj.toLocaleTimeString('th-TH', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const dayName = daysOfWeek[dateObj.getDay()] || 'วันนี้';
+  const dayNum = dateObj.getDate();
+  const monthName = thaiMonths[dateObj.getMonth()] || 'พฤศจิกายน';
+  const yearNum = dateObj.getFullYear();
 
   const lines: string[] = [];
   lines.push('📋 รายงานสารเคมีประจำวัน');
-  lines.push(`📅 ${dayName} ที่ ${dateFormatted} (เวลา ${timeFormatted} น.)`);
-  lines.push(`📍 หม้อน้ำ: ${record.boiler_name}`);
+  lines.push(`📅 ${dayName} ที่ ${dayNum} ${monthName} ${yearNum}`);
+  lines.push(`📍 ${record.boiler_name}`);
   lines.push('');
-  lines.push('⚗️ ปริมาณสารเคมีที่ต้องเติม:');
+  lines.push('⚗️ ปริมาณสารเคมีที่ใช้ไป:');
 
   if (record.details && record.details.length > 0) {
     for (const d of record.details) {
       const disp = formatDosageDisplay(d);
-      lines.push(`• ${d.name}: ${disp.roundedText} ลิตร (คงเหลือ ${d.curr} ลิตร)`);
+      lines.push(`• ${d.name}: ${disp.roundedText} ลิตร`);
     }
   }
 
@@ -157,7 +165,6 @@ export interface AppPermissions {
   allow_history_delete: boolean;
   allow_share: boolean;
   allow_chemical_info: boolean;
-  allow_sheet_sync?: boolean;
 }
 
 export interface AppSettings {
@@ -285,7 +292,7 @@ export const CHEMICAL_KNOWLEDGE_BASE: ChemicalKnowledgeCard[] = [
     specs: {
       category: 'Multi-Function Scale & Corrosion Inhibitor (สารป้องกันตะกรันและสนิมรวม)',
       appearance: 'สารละลายโพลีเมอร์และสารปรับสภาพด่างสำหรับหม้อไอน้ำ',
-      controlTarget: 'รักษาค่า pH 10.5 – 11.8 และป้องกันการตกผลึกแคลเซียม/แมกนีเซียม',
+      controlTarget: 'รักษาค่า pH 7.5 – 11.5 และป้องกันการตกผลึกแคลเซียม/แมกนีเซียม',
       dosingMethod: 'เติมต่อเนื่องผ่านชุดปั๊มโดสสารเคมีเข้าสู่ถังน้ำป้อนหรือหม้อต้ม',
       formulaText: '(ค่าล่าสุด - ค่าปัจจุบัน) ÷ 4',
     },
@@ -348,9 +355,26 @@ export const PERMISSION_DEFINITIONS: Array<{
   { key: 'allow_save', label: 'บันทึก', description: 'อนุญาตให้ผู้ใช้บันทึกประวัติ' },
   { key: 'allow_history_view', label: 'ดูประวัติ', description: 'อนุญาตให้ผู้ใช้เปิดประวัติ' },
   { key: 'allow_history_delete', label: 'ลบประวัติ', description: 'อนุญาตให้ผู้ใช้ลบรายการประวัติ' },
-  {
-    key: 'allow_sheet_sync',
-    label: 'ส่งข้อมูลลงตาราง Sheet / Excel',
-    description: 'เปิด-ปิดการส่งผลลัพธ์และวันที่ลงตารางชีตอัตโนมัติเมื่อคำนวณเสร็จ',
-  },
 ];
+
+export interface ActiveDeviceInfo {
+  sessionId: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  model: string;
+  customName?: string;
+  os: string;
+  browser: string;
+  location: string;
+  ip: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+  isStandalone: boolean;
+  firstSeen: string;
+  lastPing: number;
+  lastPingIso: string;
+  isOnline?: boolean;
+  isCurrent?: boolean;
+}
+
+

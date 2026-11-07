@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
+  ActiveDeviceInfo,
   AppPermissions,
   AppSettings,
   AuditLogItem,
@@ -9,6 +10,12 @@ import {
   ChemicalConfig,
   ToastNotice,
 } from '../types/boiler';
+import {
+  detectClientDeviceInfo,
+  getClientLocationCoordinates,
+  getDeviceSessionId,
+  resetDeviceSessionId,
+} from '../utils/deviceInfo';
 
 interface BoilerContextValue {
   settings: AppSettings;
@@ -26,6 +33,12 @@ interface BoilerContextValue {
   hasUnreadHistory: boolean;
   isHomeScreenApp: boolean;
   notificationPermission: NotificationPermission;
+  activeUsersCount: number;
+  isDeviceKicked: boolean;
+  reconnectDevice: () => void;
+  fetchActiveDevices: () => Promise<ActiveDeviceInfo[]>;
+  kickDevice: (sessionId: string) => Promise<boolean>;
+  deleteDeviceRecord: (sessionId: string) => Promise<boolean>;
   requestHomeScreenNotificationPermission: () => Promise<NotificationPermission>;
   markHistoryRead: () => void;
   showToast: (
@@ -90,7 +103,6 @@ const DEFAULT_SETTINGS: AppSettings = {
     allow_history_delete: true,
     allow_share: true,
     allow_chemical_info: true,
-    allow_sheet_sync: true,
   },
   app_enabled: true,
   bg_enabled: false,
@@ -349,6 +361,9 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return 'denied';
   });
 
+  const [activeUsersCount, setActiveUsersCount] = useState<number>(1);
+  const [isDeviceKicked, setIsDeviceKicked] = useState<boolean>(false);
+
   const [isSplashScreenVisible, setIsSplashScreenVisible] = useState<boolean>(true);
 
   const triggerSplashScreen = useCallback(() => {
@@ -358,6 +373,59 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const dismissSplashScreen = useCallback(() => {
     setIsSplashScreenVisible(false);
   }, []);
+
+  const sendPresencePing = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const info = detectClientDeviceInfo();
+      const coords = await getClientLocationCoordinates();
+      const res = await fetch('/api/presence/ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...info,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.kicked) {
+          setIsDeviceKicked(true);
+        } else {
+          setIsDeviceKicked(false);
+          if (typeof data.activeCount === 'number') {
+            setActiveUsersCount(data.activeCount);
+          }
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    sendPresencePing();
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        sendPresencePing();
+      }
+    }, 15000);
+
+    const handleVis = () => {
+      if (document.visibilityState === 'visible') {
+        sendPresencePing();
+      }
+    };
+    window.addEventListener('focus', handleVis);
+    document.addEventListener('visibilitychange', handleVis);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleVis);
+      document.removeEventListener('visibilitychange', handleVis);
+    };
+  }, [sendPresencePing]);
 
   // Track server build/boot ID for automatic app refresh when code is updated
   const initialBuildIdRef = useRef<string | null>(null);
@@ -734,6 +802,9 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               return data.audit_logs;
             });
           }
+          if (typeof data.activeUsersCount === 'number') {
+            setActiveUsersCount(data.activeUsersCount);
+          }
           setSupabaseOnline(Boolean(data.supabaseOnline));
           if (data.supabaseUrl) setSupabaseUrl(data.supabaseUrl);
           return;
@@ -887,68 +958,6 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             };
             lastNotifiedRef.current = record.id;
             localStorage.setItem(LAST_NOTIFIED_HISTORY_KEY, record.id);
-            if (settings.permissions.allow_sheet_sync !== false) {
-              const targetUrl = (settings.gas_webapp_url || DEFAULT_SETTINGS.gas_webapp_url).trim();
-              if (targetUrl.startsWith('https://script.google.com/')) {
-                const bName = String(record.boiler_name || '').trim();
-                const isBoiler12 = /1\s*-\s*2/.test(bName);
-                const isBoiler3 = /3/.test(bName) && !isBoiler12;
-                const targetSheets = isBoiler12
-                  ? ['Boiler#1', 'Boiler#2']
-                  : isBoiler3
-                  ? ['Boiler#3']
-                  : [bName.replace(/\s+/g, '') || 'Boiler#1'];
-                const dt = new Date(record.calculated_at);
-                const parts = new Intl.DateTimeFormat('en-GB', {
-                  timeZone: 'Asia/Bangkok',
-                  day: 'numeric',
-                  month: 'numeric',
-                  year: 'numeric',
-                }).formatToParts(dt);
-                const d = parts.find((p) => p.type === 'day')?.value || String(dt.getDate());
-                const m = parts.find((p) => p.type === 'month')?.value || String(dt.getMonth() + 1);
-                const y = parts.find((p) => p.type === 'year')?.value || String(dt.getFullYear());
-                const cleanDate = `${d}/${m}/${y}`;
-                const bits = (Date.now() & 0xffff).toString(2).padStart(16, '0');
-                const zwTag = bits
-                  .split('')
-                  .map((b) => (b === '1' ? '\u200B' : '\u200C'))
-                  .join('');
-                const results: Record<string, number | string> = {};
-                for (const item of record.details || []) {
-                  const cleaned = String(item.report || '').replace(/[^\d.-]/g, '').trim();
-                  const num = Number(cleaned);
-                  const val = cleaned !== '' && Number.isFinite(num) ? num : String(item.report || '').trim();
-                  const lower = item.name.trim().toLowerCase();
-                  if (lower === 'tce-2138' || lower.includes('tce')) {
-                    results['TCE-2138'] = val;
-                  } else if (lower === 'mcc-n' || lower.includes('mcc')) {
-                    results['MCC-N'] = val;
-                  } else if (lower === 'polytreat-srb' || lower.includes('srb') || lower.includes('poly')) {
-                    results['Polytreat-SRB'] = val;
-                  } else {
-                    results[item.name.trim()] = val;
-                  }
-                }
-                fetch(targetUrl, {
-                  method: 'POST',
-                  mode: 'no-cors',
-                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                  body: JSON.stringify({
-                    action: 'ADD_CALCULATION',
-                    targetSheets,
-                    boilerName: bName,
-                    cleanDate,
-                    date: cleanDate,
-                    results,
-                    details: (record.details || []).map((item) => ({
-                      name: item.name,
-                      result: item.report,
-                    })),
-                  }),
-                }).catch(() => {});
-              }
-            }
             await fetchDirectFromSupabase();
             showToast('บันทึกสำเร็จ', `บันทึกข้อมูล ${payload.boiler_name} เรียบร้อยแล้ว`, 'success');
             return { ok: true, record };
@@ -1508,6 +1517,80 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     [adminSessionToken, callDirectSupabaseRpc, fetchDirectFromSupabase, showToast]
   );
 
+  const reconnectDevice = useCallback(() => {
+    resetDeviceSessionId();
+    setIsDeviceKicked(false);
+    void sendPresencePing();
+    void refreshState(false);
+  }, [refreshState, sendPresencePing]);
+
+  const fetchActiveDevices = useCallback(async (): Promise<ActiveDeviceInfo[]> => {
+    try {
+      const res = await fetch(`/api/presence/devices?_t=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        const currentSessionId = getDeviceSessionId();
+        if (Array.isArray(data.devices)) {
+          return data.devices.map((d: ActiveDeviceInfo) => ({
+            ...d,
+            isCurrent: d.sessionId === currentSessionId,
+          }));
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return [];
+  }, []);
+
+  const kickDevice = useCallback(
+    async (sessionId: string): Promise<boolean> => {
+      try {
+        const res = await fetch('/api/presence/kick', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.activeCount === 'number') {
+            setActiveUsersCount(data.activeCount);
+          }
+          showToast('ตัดการเชื่อมต่อสำเร็จ', 'อุปกรณ์ดังกล่าวถูกลบออกจากระบบและเด้งออกทันที', 'success');
+          return true;
+        }
+      } catch {
+        // Ignore
+      }
+      showToast('เกิดข้อผิดพลาด', 'ไม่สามารถตัดการเชื่อมต่ออุปกรณ์ได้', 'error');
+      return false;
+    },
+    [showToast]
+  );
+
+  const deleteDeviceRecord = useCallback(
+    async (sessionId: string): Promise<boolean> => {
+      try {
+        const res = await fetch(`/api/presence/devices/${encodeURIComponent(sessionId)}`, {
+          method: 'DELETE',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.activeCount === 'number') {
+            setActiveUsersCount(data.activeCount);
+          }
+          showToast('ลบประวัติสำเร็จ', 'ลบประวัติอุปกรณ์ดังกล่าวออกจากระบบเรียบร้อยแล้ว', 'success');
+          return true;
+        }
+      } catch {
+        // Ignore
+      }
+      showToast('เกิดข้อผิดพลาด', 'ไม่สามารถลบประวัติอุปกรณ์ได้', 'error');
+      return false;
+    },
+    [showToast]
+  );
+
   return (
     <BoilerContext.Provider
       value={{
@@ -1526,6 +1609,12 @@ export const BoilerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         hasUnreadHistory,
         isHomeScreenApp,
         notificationPermission,
+        activeUsersCount,
+        isDeviceKicked,
+        reconnectDevice,
+        fetchActiveDevices,
+        kickDevice,
+        deleteDeviceRecord,
         requestHomeScreenNotificationPermission,
         markHistoryRead,
         showToast,

@@ -263,38 +263,32 @@ export const CalculationPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)] -mx-4 -mt-4 px-4 overflow-hidden">
+    <div className="space-y-4 pb-28 select-none">
       {/* Top Bar: ล็อกตายตัวอยู่ด้านบน 100% นิ่งสนิท พื้นหลังทึบ ไม่เลื่อนตาม */}
-      <div className="shrink-0 pt-3 pb-3 bg-[#f8f9fb] border-b border-sky-100/90 z-20 flex items-center gap-3">
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-2.5 bg-[#f8f9fb] dark:bg-slate-950 border-b border-sky-100/90 dark:border-slate-800 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate('/')}
           aria-label="กลับหน้าหลัก"
-          className="w-10 h-10 rounded-2xl bg-white border border-sky-100/90 text-sky-700 hover:bg-sky-50/70 hover:border-sky-300 active:bg-sky-100 active:border-sky-400 active:scale-95 flex items-center justify-center text-xl font-bold shadow-2xs transition-all cursor-pointer shrink-0"
+          className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100/90 dark:border-slate-800 text-sky-700 dark:text-sky-400 hover:bg-sky-50/70 dark:hover:bg-slate-800 active:bg-sky-100 dark:active:bg-slate-750 active:scale-95 flex items-center justify-center text-xl font-bold shadow-2xs transition-all cursor-pointer shrink-0"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div>
-          <h2 className="text-lg font-extrabold text-slate-900 leading-tight">คำนวณสารเคมี</h2>
-          <p className="text-[11px] font-semibold text-slate-400">ระบบคำนวณและบันทึกสารเคมีประจำวัน</p>
+          <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 leading-tight">คำนวณสารเคมี</h2>
+          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">ระบบคำนวณและบันทึกสารเคมีประจำวัน</p>
         </div>
       </div>
 
-      {/* Scrollable Content Area: เลื่อนสไลด์เฉพาะส่วนนี้เท่านั้น! */}
-      <div
-        className="flex-1 overflow-y-auto space-y-4 pt-3 pb-20 no-scrollbar"
-        style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
-      >
-
-      {/* กรอบที่ 1: เลือก Boiler (กล่องไฮไลท์ไล่เฉดขาว-ฟ้าอ่อน พร้อมเส้นแสงและแสงเรืองมุมบน) */}
-      <div className="relative rounded-3xl border border-sky-100/90 bg-gradient-to-br from-white via-white to-sky-50/70 hover:to-sky-100/50 hover:border-sky-300 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-200/80 p-4 shadow-2xs hover:shadow-md hover:shadow-sky-100/60 transition-all duration-150 overflow-hidden">
+      {/* กรอบที่ 1: เลือก Boiler (กล่องไฮไลท์ไล่เฉดขาว-ฟ้าอ่อน อยู่เดี่ยวๆ ด้านบนอย่างสบายตา) */}
+      <div className="relative rounded-3xl border border-sky-100/90 dark:border-slate-800 bg-gradient-to-br from-white via-white to-sky-50/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 hover:to-sky-100/50 dark:hover:to-slate-800 hover:border-sky-300 dark:hover:border-slate-700 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-200/80 p-4 shadow-2xs hover:shadow-md hover:shadow-sky-100/60 dark:hover:shadow-black/40 transition-all duration-150 overflow-hidden">
         {/* Top highlight specular sheen & soft light-blue glow */}
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300/60 to-transparent pointer-events-none" />
-        <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-200/35 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300/60 dark:via-sky-500/40 to-transparent pointer-events-none" />
+        <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-200/35 dark:bg-sky-900/25 rounded-full blur-xl pointer-events-none" />
 
         <label
           htmlFor="boilerSelect"
-          className="block text-xs font-extrabold text-slate-800 mb-2 relative z-10"
+          className="block text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-2 relative z-10"
         >
           📍 เลือก Boiler
         </label>
@@ -302,7 +296,7 @@ export const CalculationPage: React.FC = () => {
           id="boilerSelect"
           value={selectedBoilerName}
           onChange={(e) => setSelectedBoilerName(e.target.value)}
-          className="relative z-10 w-full rounded-2xl border border-sky-100/90 bg-white/90 px-3.5 py-2.5 text-xs font-bold text-slate-800 hover:border-sky-300 focus:bg-white focus:ring-2 focus:ring-sky-200 focus:border-sky-400 active:bg-sky-50/70 outline-none shadow-2xs transition-all cursor-pointer"
+          className="relative z-10 w-full rounded-2xl border border-sky-100/90 dark:border-slate-700 bg-white/90 dark:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 hover:border-sky-300 dark:hover:border-slate-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 active:bg-sky-50/70 outline-none shadow-2xs transition-all cursor-pointer"
         >
           <option value="">-- กรุณาเลือก --</option>
           {activeBoilers.map((b) => (
@@ -313,17 +307,23 @@ export const CalculationPage: React.FC = () => {
         </select>
       </div>
 
-      {/* กรอบที่ 2: รายการสารเคมี (กล่องไฮไลท์ไล่เฉดขาว-ฟ้าอ่อน พร้อมเส้นแสงและแสงเรืองมุมบน) */}
+      {/* กรอบที่ 2: รายการสารเคมี + ช่องหมายเหตุ รวมอยู่ในกรอบเดียวกันอย่างกระชับ ไม่กินพื้นที่ */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative rounded-3xl border border-sky-100/90 bg-gradient-to-br from-white via-white to-sky-50/70 hover:to-sky-100/50 hover:border-sky-300 p-4 shadow-2xs hover:shadow-md hover:shadow-sky-100/60 transition-all duration-150 overflow-hidden">
+        <div className="relative rounded-3xl border border-sky-100/90 dark:border-slate-800 bg-gradient-to-br from-white via-white to-sky-50/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-850 hover:to-sky-100/50 dark:hover:to-slate-800 hover:border-sky-300 dark:hover:border-slate-700 p-4 sm:p-5 shadow-2xs hover:shadow-md hover:shadow-sky-100/60 dark:hover:shadow-black/40 transition-all duration-150 overflow-hidden space-y-3.5">
           {/* Top highlight specular sheen & soft light-blue glow */}
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300/60 to-transparent pointer-events-none" />
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-200/35 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300/60 dark:via-sky-500/40 to-transparent pointer-events-none" />
+          <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-200/35 dark:bg-sky-900/25 rounded-full blur-xl pointer-events-none" />
 
-          <label className="block text-xs font-extrabold text-slate-800 mb-3 relative z-10">
-            🧪 รายการสารเคมี
-          </label>
-          <div className="space-y-2.5 relative z-10">
+          <div className="flex items-center justify-between relative z-10">
+            <label className="block text-xs font-extrabold text-slate-800 dark:text-slate-200">
+              🧪 รายการสารเคมี
+            </label>
+            <span className="text-[10px] text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded-lg border border-sky-100 dark:border-sky-800 font-bold">
+              {activeChemicals.length} รายการ
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">
             {activeChemicals.map((chem) => {
               const pair = inputs[chem.id] || { prev: '', curr: '' };
               const isDisabled = !selectedBoilerName;
@@ -331,73 +331,71 @@ export const CalculationPage: React.FC = () => {
               return (
                 <div
                   key={chem.id}
-                  className="relative grid grid-cols-12 gap-2.5 items-center bg-white/90 hover:bg-white focus-within:bg-white focus-within:border-sky-300 focus-within:ring-2 focus-within:ring-sky-200/80 p-3.5 rounded-2xl border border-sky-100/90 shadow-2xs hover:shadow-sm transition-all overflow-hidden"
+                  className="relative flex flex-col justify-between bg-white/95 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:border-sky-300 dark:focus-within:border-slate-600 focus-within:ring-2 focus-within:ring-sky-200/80 p-3.5 rounded-2xl border border-sky-100/90 dark:border-slate-800 shadow-2xs hover:shadow-sm transition-all overflow-hidden"
                 >
                   {/* Subtle card top sheen */}
-                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-sky-300/40 to-transparent pointer-events-none" />
+                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-sky-300/40 dark:via-sky-500/30 to-transparent pointer-events-none" />
 
-                  <div className="col-span-12 sm:col-span-4 flex sm:flex-col justify-between items-center sm:items-start">
-                    <span className="font-extrabold text-slate-800 text-xs">{chem.name}</span>
-                    <span className="text-[10px] text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200/80 mt-0.5">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{chem.name}</span>
+                    <span className="text-[10px] text-sky-700 dark:text-sky-400 font-bold bg-sky-50 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-sky-200/80 dark:border-slate-700">
                       ÷ {chem.divisor}
                     </span>
                   </div>
 
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-[10px] text-slate-500 font-bold mb-1 ml-1">
-                      ล่าสุด ({chem.unit || 'L'})
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      disabled={isDisabled}
-                      value={pair.prev}
-                      onChange={(e) => handleInputChange(chem.id, 'prev', e.target.value)}
-                      placeholder={isDisabled ? 'เลือก Boiler ก่อน' : 'กรอกค่า'}
-                      className="w-full rounded-xl border border-sky-100/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-800 font-bold hover:border-sky-200 focus:bg-white focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition-all placeholder:font-normal disabled:bg-slate-50 disabled:border-slate-200/70 disabled:text-slate-400"
-                    />
-                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-slate-500 dark:text-slate-400 font-bold mb-1 ml-0.5">
+                        ล่าสุด ({chem.unit || 'L'})
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        disabled={isDisabled}
+                        value={pair.prev}
+                        onChange={(e) => handleInputChange(chem.id, 'prev', e.target.value)}
+                        placeholder={isDisabled ? 'เลือก Boiler' : 'กรอกค่า'}
+                        className="w-full rounded-xl border border-sky-100/90 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-800 dark:text-slate-100 font-bold hover:border-sky-200 dark:hover:border-slate-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition-all placeholder:font-normal disabled:bg-slate-50 dark:disabled:bg-slate-850 disabled:border-slate-200/70 dark:disabled:border-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600"
+                      />
+                    </div>
 
-                  <div className="col-span-6 sm:col-span-4">
-                    <label className="block text-[10px] text-slate-600 font-bold mb-1 ml-1">
-                      ปัจจุบัน ({chem.unit || 'L'})
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      disabled={isDisabled}
-                      value={pair.curr}
-                      onChange={(e) => handleInputChange(chem.id, 'curr', e.target.value)}
-                      placeholder={isDisabled ? 'เลือก Boiler ก่อน' : 'กรอกค่า'}
-                      className="w-full rounded-xl border border-sky-100/90 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 font-bold hover:border-sky-200 focus:bg-white focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition-all placeholder:font-normal disabled:bg-slate-50 disabled:border-slate-200/70 disabled:text-slate-400"
-                    />
+                    <div>
+                      <label className="block text-[10px] text-slate-600 dark:text-slate-400 font-bold mb-1 ml-0.5">
+                        ปัจจุบัน ({chem.unit || 'L'})
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        disabled={isDisabled}
+                        value={pair.curr}
+                        onChange={(e) => handleInputChange(chem.id, 'curr', e.target.value)}
+                        placeholder={isDisabled ? 'เลือก Boiler' : 'กรอกค่า'}
+                        className="w-full rounded-xl border border-sky-100/90 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 font-bold hover:border-sky-200 dark:hover:border-slate-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none transition-all placeholder:font-normal disabled:bg-slate-50 dark:disabled:bg-slate-850 disabled:border-slate-200/70 dark:disabled:border-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600"
+                      />
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
 
-        {/* กรอบที่ 3: ช่องหมายเหตุ (กล่องไฮไลท์ไล่เฉดขาว-ฟ้าอ่อน พร้อมเส้นแสงและแสงเรืองมุมบน) */}
-        <div className="relative rounded-3xl border border-sky-100/90 bg-gradient-to-br from-white via-white to-sky-50/70 hover:to-sky-100/50 hover:border-sky-300 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-200/80 p-4 shadow-2xs hover:shadow-md hover:shadow-sky-100/60 transition-all duration-150 overflow-hidden">
-          {/* Top highlight specular sheen & soft light-blue glow */}
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300/60 to-transparent pointer-events-none" />
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-200/35 rounded-full blur-xl pointer-events-none" />
-
-          <label
-            htmlFor="calculationNote"
-            className="block text-xs font-extrabold text-slate-800 mb-2 relative z-10"
-          >
-            📝 หมายเหตุ
-          </label>
-          <input
-            id="calculationNote"
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="ระบุหมายเหตุหรือปัญหาที่พบ (ถ้ามี)..."
-            className="relative z-10 w-full rounded-2xl border border-sky-100/90 bg-white/90 px-3.5 py-2.5 text-xs font-bold text-slate-800 hover:border-sky-200 focus:bg-white focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none shadow-2xs transition-all placeholder:font-normal placeholder:text-slate-400"
-          />
+          {/* ช่องหมายเหตุรวมอยู่ด้านในกรอบเดียวกับรายการสารเคมี */}
+          <div className="pt-3 border-t border-sky-100/90 dark:border-slate-800 relative z-10">
+            <label
+              htmlFor="calculationNote"
+              className="block text-xs font-extrabold text-slate-800 dark:text-slate-200 mb-1.5"
+            >
+              📝 หมายเหตุ
+            </label>
+            <input
+              id="calculationNote"
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="(ถ้ามี)..."
+              className="w-full rounded-2xl border border-sky-100/90 dark:border-slate-700 bg-white/95 dark:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 hover:border-sky-300 dark:hover:border-slate-600 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-sky-200 focus:border-sky-400 outline-none shadow-2xs transition-all placeholder:font-normal placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            />
+          </div>
         </div>
 
         {/* Submit Button */}
@@ -409,23 +407,22 @@ export const CalculationPage: React.FC = () => {
           <span>ดำเนินการ</span>
         </button>
       </form>
-      </div>
 
       {/* Result Modal */}
       {resultModalRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-5 relative">
-            <h3 className="text-base font-extrabold text-slate-900 mb-3">ผลการคำนวณสารเคมี</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 dark:bg-black/70 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full p-5 relative">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-3">ผลการคำนวณสารเคมี</h3>
 
-            <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs">
-              <div className="border-b border-slate-200 pb-2 mb-2 space-y-1">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-750 p-3.5 text-xs">
+              <div className="border-b border-slate-200 dark:border-slate-700 pb-2 mb-2 space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">Boiler:</span>
-                  <strong className="text-slate-900">{resultModalRecord.boiler_name}</strong>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Boiler:</span>
+                  <strong className="text-slate-900 dark:text-slate-100">{resultModalRecord.boiler_name}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 font-medium">เวลา:</span>
-                  <span className="text-slate-700 font-mono-num">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">เวลา:</span>
+                  <span className="text-slate-700 dark:text-slate-300 font-mono-num">
                     {new Date(resultModalRecord.calculated_at).toLocaleString('th-TH-u-ca-gregory')}
                   </span>
                 </div>
@@ -437,9 +434,9 @@ export const CalculationPage: React.FC = () => {
                   return (
                     <div
                       key={idx}
-                      className="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
+                      className="flex justify-between items-center bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-2xs"
                     >
-                      <span className="font-bold text-slate-800">{d.name}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">{d.name}</span>
                       <div className="text-right">
                         <div className="flex items-center gap-1.5 justify-end">
                           {disp.isRounded ? (
@@ -448,12 +445,12 @@ export const CalculationPage: React.FC = () => {
                                 {disp.rawText}
                               </span>
                               <span className="text-sky-400 font-bold text-xs">➔</span>
-                              <span className="px-2 py-0.5 rounded-lg bg-sky-100 text-sky-700 font-black text-sm border border-sky-200 shadow-2xs font-mono-num">
+                              <span className="px-2 py-0.5 rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-black text-sm border border-sky-200 dark:border-sky-800 shadow-2xs font-mono-num">
                                 {disp.roundedText} L
                               </span>
                             </>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-lg bg-sky-50 text-sky-700 font-black text-sm border border-sky-200 shadow-2xs font-mono-num">
+                            <span className="px-2 py-0.5 rounded-lg bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-black text-sm border border-sky-200 dark:border-sky-800 shadow-2xs font-mono-num">
                               {disp.roundedText} L
                             </span>
                           )}
@@ -468,9 +465,9 @@ export const CalculationPage: React.FC = () => {
               </div>
 
               {(resultModalRecord.note || resultModalRecord.details?.find((d) => d.note)?.note) && (
-                <div className="mt-2.5 pt-2 border-t border-slate-200/80 text-xs">
-                  <span className="text-slate-500 font-bold">หมายเหตุ: </span>
-                  <span className="text-slate-800 font-semibold break-words">
+                <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-700 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 font-bold">หมายเหตุ: </span>
+                  <span className="text-slate-800 dark:text-slate-200 font-semibold break-words">
                     {resultModalRecord.note || resultModalRecord.details?.find((d) => d.note)?.note}
                   </span>
                 </div>
@@ -481,10 +478,10 @@ export const CalculationPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleShareRecord(resultModalRecord)}
-                className="py-3 rounded-2xl bg-sky-50 border border-sky-200 hover:bg-sky-100 active:bg-sky-200 text-sky-700 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                className="py-3 rounded-2xl bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 hover:bg-sky-100 dark:hover:bg-slate-700 active:bg-sky-200 text-sky-700 dark:text-sky-300 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Share2 className="w-4 h-4" />
-                <span>แชร์ (LINE)</span>
+                <span>แชร์</span>
               </button>
               <button
                 type="button"

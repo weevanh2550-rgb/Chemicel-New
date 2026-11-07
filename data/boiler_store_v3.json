@@ -1,7 +1,7 @@
 {
   "settings": {
     "site_name": "ระบบสารเคมี",
-    "app_version": "3.20.0",
+    "app_version": "3.26.0",
     "developer_name": "Weevanh Khambounheuang",
     "copyright_name": "Weevanh Khambounheuang",
     "department_name": "แผนกบอยเลอร์ (Steam Boiler Department)",
@@ -18,7 +18,6 @@
       "allow_history_delete": true,
       "allow_share": true,
       "allow_chemical_info": true,
-      "allow_sheet_sync": false,
       "allow_export": true
     },
     "app_enabled": true,
@@ -145,9 +144,71 @@
     "52b19b89-771f-4a41-be21-56b8528b5d23",
     "717b50ee-6bba-40f0-87f6-e10f04dccd0a",
     "bcbef4c7-f059-46ed-b672-559dfc1ea96f",
-    "00000000-0000-4000-8000-1f5f54f5aac0"
+    "00000000-0000-4000-8000-1f5f54f5aac0",
+    "5c270faf-8e5d-477a-84e5-7a75cdbc40f9",
+    "eb1e1f53-e025-4ac9-b138-49dd70d887b3",
+    "f150ee6e-9225-415a-88ba-28fb4318ad9a",
+    "7b7856ae-1ab6-41b6-9a16-5516a0a8ff43",
+    "4aa993a8-4ea6-4fec-9c67-7e9584261a97",
+    "de98e2a5-5d99-40c0-b93d-dfb97c9e24f3",
+    "e2e44a38-2d5c-44d9-aa40-a55e006155af",
+    "00000000-0000-4000-8000-e9675bd93630"
   ],
   "audit_logs": [
+    {
+      "id": "audit_1793951637033_iy1m",
+      "action": "DELETE_DEVICE_RECORD",
+      "details": "ลบประวัติอุปกรณ์ Health Checker (Linux) ออกจากระบบ",
+      "created_at": "2026-11-06T07:53:57.033Z"
+    },
+    {
+      "id": "audit_1793708680865_pnk1",
+      "action": "DELETE_DEVICE_RECORD",
+      "details": "ลบประวัติอุปกรณ์ iPhone 15 Pro (iOS 18.2) ออกจากระบบ",
+      "created_at": "2026-11-03T12:24:40.865Z"
+    },
+    {
+      "id": "audit_1793707098713_0dy8",
+      "action": "KICK_DEVICE",
+      "details": "ตัดการเชื่อมต่ออุปกรณ์ Android Phone (Android 14)",
+      "created_at": "2026-11-03T11:58:18.713Z"
+    },
+    {
+      "id": "audit_1793706988483_77um",
+      "action": "KICK_DEVICE",
+      "details": "ตัดการเชื่อมต่ออุปกรณ์ Windows 11 PC (Windows 11)",
+      "created_at": "2026-11-03T11:56:28.483Z"
+    },
+    {
+      "id": "audit_1793705742786_dgyu",
+      "action": "DELETE_HISTORY",
+      "details": "ลบรายการประวัติ Boiler #1-2",
+      "created_at": "2026-11-03T11:35:42.786Z"
+    },
+    {
+      "id": "audit_1793542165184_9dlp",
+      "action": "ADMIN_LOGIN",
+      "details": "เข้าสู่ระบบผู้ดูแลระบบสำเร็จ",
+      "created_at": "2026-11-01T14:09:25.185Z"
+    },
+    {
+      "id": "audit_1793540932200_xfvd",
+      "action": "DELETE_HISTORY",
+      "details": "ลบรายการประวัติ Boiler #3",
+      "created_at": "2026-11-01T13:48:52.200Z"
+    },
+    {
+      "id": "audit_1793540930052_vqlf",
+      "action": "DELETE_HISTORY",
+      "details": "ลบรายการประวัติ Boiler #3",
+      "created_at": "2026-11-01T13:48:50.052Z"
+    },
+    {
+      "id": "audit_1793540928854_8dx2",
+      "action": "DELETE_HISTORY",
+      "details": "ลบรายการประวัติ Boiler #1-2",
+      "created_at": "2026-11-01T13:48:48.854Z"
+    },
     {
       "id": "audit_1793511004005_8jw9",
       "action": "DELETE_HISTORY",
@@ -693,60 +754,25 @@
       "action": "ADMIN_LOGIN",
       "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
       "created_at": "2026-10-13T04:00:47.290Z"
-    },
+    }
+  ],
+  "registered_devices": [
     {
-      "id": "audit_1791864026270_05wk",
-      "action": "UPDATE_SETTINGS",
-      "details": "อัปเดตการตั้งค่าระบบ (ระบบสารเคมี v3.0.0)",
-      "created_at": "2026-10-13T04:00:26.270Z"
-    },
-    {
-      "id": "audit_1791863879082_3ozm",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T03:57:59.082Z"
-    },
-    {
-      "id": "audit_1791863534585_3kvr",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T03:52:14.585Z"
-    },
-    {
-      "id": "audit_1791862309745_e513",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T03:31:49.745Z"
-    },
-    {
-      "id": "audit_1791860559000_ofkl",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T03:02:39.000Z"
-    },
-    {
-      "id": "audit_1791860223439_ya2o",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T02:57:03.439Z"
-    },
-    {
-      "id": "audit_1791860183992_1kf2",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T02:56:23.992Z"
-    },
-    {
-      "id": "audit_1791859957547_cusd",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T02:52:37.547Z"
-    },
-    {
-      "id": "audit_1791859604586_vn49",
-      "action": "ADMIN_LOGIN",
-      "details": "เข้าสู่ระบบผู้ดูแลระบบผ่านฐานข้อมูลกลางสำเร็จ",
-      "created_at": "2026-10-13T02:46:44.586Z"
+      "sessionId": "dev_1793950426394_e1aai1k",
+      "deviceType": "desktop",
+      "model": "Apple Mac",
+      "os": "macOS",
+      "browser": "Apple Safari",
+      "location": "ไทย (Thailand)",
+      "ip": "114.129.26.126",
+      "latitude": null,
+      "longitude": null,
+      "accuracy": null,
+      "isStandalone": false,
+      "firstSeen": "2026-11-06T07:51:47.540Z",
+      "lastPing": 1793952393963,
+      "lastPingIso": "2026-11-06T08:06:33.963Z",
+      "kicked": false
     }
   ]
 }

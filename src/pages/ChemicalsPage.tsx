@@ -222,7 +222,7 @@ export const ChemicalsPage: React.FC = () => {
             rotateZ: -1.8,
             scale: 1.01,
             opacity: 0.95,
-            zIndex: 30,
+            zIndex: 15,
             boxShadow: '26px 0 42px rgba(15, 23, 42, 0.22)',
           },
     center: {
@@ -240,7 +240,7 @@ export const ChemicalsPage: React.FC = () => {
             rotateZ: -1.8,
             scale: 1.01,
             opacity: 0,
-            zIndex: 30,
+            zIndex: 15,
             boxShadow: '28px 0 48px rgba(15, 23, 42, 0.25)',
           }
         : {
@@ -254,39 +254,33 @@ export const ChemicalsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)] -mx-4 -mt-4 px-4 overflow-hidden">
+    <div className="space-y-4 pb-28 select-none">
       {/* Top Bar: ล็อกตายตัวอยู่ด้านบน 100% นิ่งสนิท พื้นหลังทึบ ไม่เลื่อนตาม */}
-      <div className="shrink-0 pt-3 pb-3 bg-[#f8f9fb] border-b border-sky-100/90 z-20 flex items-center justify-between">
+      <div className="sticky top-0 z-35 -mx-4 px-4 py-2.5 bg-[#f8f9fb]/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-sky-100/90 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/')}
             aria-label="กลับหน้าหลัก"
-            className="w-10 h-10 rounded-2xl bg-white border border-sky-100/90 text-sky-700 hover:bg-sky-50/70 hover:border-sky-300 active:bg-sky-100 active:border-sky-400 active:scale-95 flex items-center justify-center text-xl font-bold shadow-2xs transition-all cursor-pointer shrink-0"
+            className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-sky-100/90 dark:border-slate-800 text-sky-700 dark:text-sky-400 hover:bg-sky-50/70 dark:hover:bg-slate-800 hover:border-sky-300 active:bg-sky-100 active:border-sky-400 active:scale-95 flex items-center justify-center text-xl font-bold shadow-2xs transition-all cursor-pointer shrink-0"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-lg font-extrabold text-slate-900 leading-tight">คุณสมบัติสารเคมี</h2>
-            <p className="text-[11px] font-semibold text-slate-400">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">คุณสมบัติสารเคมี</h2>
+            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-400">
               แตะเลือกสารเคมี หรือปัดซ้าย-ขวาเพื่อเปิดหน้าสมุด
             </p>
           </div>
         </div>
 
-        <span className="px-2.5 py-1 rounded-xl bg-sky-50 border border-sky-100/90 text-sky-700 text-xs font-extrabold shrink-0">
+        <span className="px-2.5 py-1 rounded-xl bg-sky-50 dark:bg-slate-800/80 border border-sky-100/90 dark:border-slate-700 text-sky-700 dark:text-sky-300 text-xs font-extrabold shrink-0">
           หน้า {pageIndex + 1} / {bookPages.length}
         </span>
       </div>
 
-      {/* Scrollable Content Area: เลื่อนสไลด์เฉพาะส่วนนี้เท่านั้น! */}
-      <div
-        className="flex-1 overflow-y-auto space-y-4 pt-3 pb-20 no-scrollbar"
-        style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
-      >
-
       {/* Chemical Bookmark Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-2.5 px-1 -mx-1 no-scrollbar">
         {bookPages.map((chem, idx) => {
           const isSelected = idx === pageIndex;
           return (
@@ -294,17 +288,17 @@ export const ChemicalsPage: React.FC = () => {
               key={chem.code + idx}
               type="button"
               onClick={() => selectDirectPage(idx)}
-              className={`px-3.5 py-2 rounded-2xl text-xs font-extrabold shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-2 rounded-2xl text-xs font-extrabold shrink-0 transition-all flex items-center gap-1.5 cursor-pointer select-none ${
                 isSelected
-                  ? 'bg-sky-600 text-white border border-sky-600 shadow-sm shadow-sky-500/25 -translate-y-0.5'
-                  : 'bg-white border border-sky-100/90 text-slate-600 hover:bg-sky-50/60 hover:border-sky-300 active:bg-sky-100/80 active:border-sky-400 active:scale-95'
+                  ? 'bg-sky-600 text-white border border-sky-600 shadow-md shadow-sky-500/25 ring-2 ring-sky-300/40 dark:ring-sky-500/40'
+                  : 'bg-white dark:bg-slate-900 border border-sky-100/90 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-sky-50/60 dark:hover:bg-slate-800 hover:border-sky-300 active:bg-sky-100/80 active:border-sky-400 active:scale-95'
               }`}
             >
               <FlaskConical className="w-3.5 h-3.5" />
               <span>{chem.name}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-sky-50 text-sky-700'
+                  isSelected ? 'bg-white/20 text-white' : 'bg-sky-50 dark:bg-slate-800 text-sky-700 dark:text-sky-300'
                 }`}
               >
                 ÷{chem.divisor}
@@ -318,26 +312,26 @@ export const ChemicalsPage: React.FC = () => {
       <div
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative touch-pan-y"
+        className="relative touch-pan-y isolate z-10"
       >
         {/* Layered Book Pages Underneath */}
-        <div className="absolute inset-x-2.5 -bottom-2.5 h-full rounded-[28px] bg-sky-100/60 border border-sky-200/60 -z-10" />
-        <div className="absolute inset-x-1 -bottom-1.5 h-full rounded-[28px] bg-sky-50/90 border border-sky-100 -z-10" />
+        <div className="absolute inset-x-2.5 -bottom-2.5 h-full rounded-[28px] bg-sky-100/60 dark:bg-slate-800/60 border border-sky-200/60 dark:border-slate-700/60 -z-10" />
+        <div className="absolute inset-x-1 -bottom-1.5 h-full rounded-[28px] bg-sky-50/90 dark:bg-slate-800/90 border border-sky-100 dark:border-slate-700 -z-10" />
 
-        <div className="relative rounded-[28px] bg-white border border-sky-100/90 hover:border-sky-200 active:border-sky-300 shadow-xl overflow-hidden flex min-h-[470px]">
+        <div className="relative rounded-[28px] bg-white dark:bg-slate-900 border border-sky-100/90 dark:border-slate-800 hover:border-sky-200 dark:hover:border-slate-700 active:border-sky-300 shadow-xl overflow-hidden flex min-h-[470px]">
           {/* Fixed Left Notebook Spiral Rings & Spine Shadow */}
-          <div className="w-9 sm:w-11 bg-gradient-to-r from-sky-100 via-sky-50 to-white border-r border-sky-200/80 flex flex-col items-center justify-evenly py-6 shrink-0 select-none z-40">
+          <div className="w-9 sm:w-11 bg-gradient-to-r from-sky-100 via-sky-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 border-r border-sky-200/80 dark:border-slate-800 flex flex-col items-center justify-evenly py-6 shrink-0 select-none z-20">
             {[0, 1, 2, 3, 4, 5, 6, 7].map((ring) => (
               <div key={ring} className="flex items-center">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-200 border-2 border-sky-300 shadow-inner" />
-                <div className="w-2.5 h-1 bg-sky-400 -ml-1 rounded-r-full" />
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-800 border-2 border-sky-300 dark:border-sky-600 shadow-inner" />
+                <div className="w-2.5 h-1 bg-sky-400 dark:bg-sky-500 -ml-1 rounded-r-full" />
               </div>
             ))}
           </div>
 
           {/* 3D Hinged Paper Sheet Container */}
           <div
-            className="relative flex-1 flex overflow-hidden bg-[#f8fafc]"
+            className="relative flex-1 flex overflow-hidden bg-[#f8fafc] dark:bg-slate-950"
             style={{ perspective: '1800px' }}
           >
             <AnimatePresence initial={false} mode="popLayout" custom={direction}>
@@ -367,20 +361,20 @@ export const ChemicalsPage: React.FC = () => {
                   transformStyle: 'preserve-3d',
                   backfaceVisibility: 'hidden',
                 }}
-                className="w-full flex-1 p-4 sm:p-5 flex flex-col justify-between bg-white bg-[linear-gradient(to_bottom,transparent_31px,#f0f9ff_32px)] bg-[size:100%_32px] cursor-grab active:cursor-grabbing relative"
+                className="w-full flex-1 p-4 sm:p-5 flex flex-col justify-between bg-white dark:bg-slate-900 bg-[linear-gradient(to_bottom,transparent_31px,#f0f9ff_32px)] dark:bg-[linear-gradient(to_bottom,transparent_31px,#1e293b_32px)] bg-[size:100%_32px] cursor-grab active:cursor-grabbing relative"
               >
                 {/* Subtle Spine Crease & Page Curl Highlight */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-sky-900/[0.06] via-sky-900/[0.02] to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-sky-900/[0.04] to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-sky-900/[0.06] via-sky-900/[0.02] to-transparent dark:from-black/20" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-sky-900/[0.04] to-transparent dark:from-black/15" />
               <div>
                 {/* Notebook Page Top Header */}
-                <div className="flex items-start justify-between gap-2 border-b-2 border-sky-500/20 pb-3 mb-3">
+                <div className="flex items-start justify-between gap-2 border-b-2 border-sky-500/20 dark:border-sky-500/30 pb-3 mb-3">
                   <div>
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-sky-600">
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:text-sky-400">
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>NOTEBOOK PAGE 0{pageIndex + 1}</span>
                     </div>
-                    <h3 className="text-xl font-black text-slate-900 mt-0.5">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                       {currentPage.name}
                     </h3>
                   </div>
@@ -391,14 +385,14 @@ export const ChemicalsPage: React.FC = () => {
                 </div>
 
                 {/* Inner Sub-View Toggle: คุณสมบัติหลัก vs ข้อมูลทางเทคนิค */}
-                <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-sky-50 border border-sky-100 mb-3.5">
+                <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-sky-50 dark:bg-slate-800/70 border border-sky-100 dark:border-slate-700 mb-3.5">
                   <button
                     type="button"
                     onClick={() => setInnerTab('PROPERTIES')}
                     className={`py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                       innerTab === 'PROPERTIES'
-                        ? 'bg-white text-sky-700 shadow-2xs'
-                        : 'text-slate-500 hover:text-sky-700'
+                        ? 'bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-300 shadow-2xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-sky-700 dark:hover:text-sky-300'
                     }`}
                   >
                     คุณสมบัติและการทำงาน
@@ -408,8 +402,8 @@ export const ChemicalsPage: React.FC = () => {
                     onClick={() => setInnerTab('TECHNICAL')}
                     className={`py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
                       innerTab === 'TECHNICAL'
-                        ? 'bg-white text-sky-700 shadow-2xs'
-                        : 'text-slate-500 hover:text-sky-700'
+                        ? 'bg-white dark:bg-slate-900 text-sky-700 dark:text-sky-300 shadow-2xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-sky-700 dark:hover:text-sky-300'
                     }`}
                   >
                     ข้อมูลทางเทคนิค & สูตร
@@ -418,30 +412,32 @@ export const ChemicalsPage: React.FC = () => {
 
                 {innerTab === 'PROPERTIES' ? (
                   <div className="space-y-2.5">
-                    <p className="text-xs font-semibold text-sky-900 bg-sky-50/90 border border-sky-200/80 rounded-2xl p-3">
+                    <p className="text-xs font-semibold text-sky-900 dark:text-sky-200 bg-sky-50/90 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-900/50 rounded-2xl p-3">
                       {currentPage.summary}
                     </p>
 
-                    {currentPage.topics.map((topic, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-2xl bg-white/95 border border-sky-100 shadow-2xs space-y-1"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" />
-                          <strong className="text-xs font-extrabold text-slate-900">
-                            {topic.title}
-                          </strong>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                      {currentPage.topics.map((topic, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-2xl bg-white/95 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700 shadow-2xs space-y-1"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                            <strong className="text-xs font-extrabold text-slate-900 dark:text-white">
+                              {topic.title}
+                            </strong>
+                          </div>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed pl-5">
+                            {topic.body}
+                          </p>
                         </div>
-                        <p className="text-[11px] text-slate-600 leading-relaxed pl-5">
-                          {topic.body}
-                        </p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-2.5">
-                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-xs md:col-span-2">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-sky-100 uppercase tracking-wider">
                         <Calculator className="w-3.5 h-3.5" />
                         <span>สูตรคำนวณมาตรฐานประจำกะ</span>
@@ -454,32 +450,32 @@ export const ChemicalsPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-white/95 border border-sky-100 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800">
-                        <Cpu className="w-3.5 h-3.5 text-sky-600" />
+                    <div className="p-3 rounded-2xl bg-white/95 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                        <Cpu className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                         <span>ประเภทสารเคมี (Classification)</span>
                       </div>
-                      <p className="text-[11px] text-slate-600 pl-5">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 pl-5">
                         {currentPage.specs.category}
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-white/95 border border-sky-100 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800">
-                        <Gauge className="w-3.5 h-3.5 text-sky-600" />
+                    <div className="p-3 rounded-2xl bg-white/95 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700 space-y-1">
+                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                        <Gauge className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                         <span>เป้าหมายการควบคุม (Control Target)</span>
                       </div>
-                      <p className="text-[11px] text-slate-600 pl-5">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 pl-5">
                         {currentPage.specs.controlTarget}
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-white/95 border border-sky-100 space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800">
-                        <Droplets className="w-3.5 h-3.5 text-sky-600" />
+                    <div className="p-3 rounded-2xl bg-white/95 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700 space-y-1 md:col-span-2">
+                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                        <Droplets className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                         <span>ลักษณะทางกายภาพและการจ่ายยา</span>
                       </div>
-                      <p className="text-[11px] text-slate-600 pl-5">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 pl-5">
                         {currentPage.specs.appearance} • {currentPage.specs.dosingMethod}
                       </p>
                     </div>
@@ -488,9 +484,9 @@ export const ChemicalsPage: React.FC = () => {
               </div>
 
                 {/* Bottom Notebook Page Footer */}
-                <div className="mt-4 pt-3 border-t border-sky-100 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+                <div className="mt-4 pt-3 border-t border-sky-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
                   <span>ปัดซ้าย-ขวาเพื่อเปิดหน้ากระดาษ</span>
-                  <span className="text-sky-600 font-bold">
+                  <span className="text-sky-600 dark:text-sky-400 font-bold">
                     หน้า {pageIndex + 1} / {bookPages.length}
                   </span>
                 </div>
@@ -509,11 +505,10 @@ export const ChemicalsPage: React.FC = () => {
             onClick={() => selectDirectPage(idx)}
             aria-label={`ไปหน้าที่ ${idx + 1}`}
             className={`h-1.5 rounded-full transition-all cursor-pointer ${
-              idx === pageIndex ? 'w-5 bg-sky-600' : 'w-1.5 bg-sky-200'
+              idx === pageIndex ? 'w-5 bg-sky-600' : 'w-1.5 bg-sky-200 dark:bg-slate-700'
             }`}
           />
         ))}
-      </div>
       </div>
     </div>
   );

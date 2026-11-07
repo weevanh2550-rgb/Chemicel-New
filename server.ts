@@ -74,7 +74,6 @@ export interface AppPermissions {
   allow_history_delete: boolean;
   allow_share: boolean;
   allow_chemical_info: boolean;
-  allow_sheet_sync?: boolean;
 }
 
 export interface AppSettings {
@@ -99,6 +98,25 @@ export interface AppSettings {
   updated_at: string;
 }
 
+export interface DeviceRecord {
+  sessionId: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  model: string;
+  customName?: string;
+  os: string;
+  browser: string;
+  location: string;
+  ip: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+  isStandalone: boolean;
+  firstSeen: string;
+  lastPing: number;
+  lastPingIso: string;
+  kicked?: boolean;
+}
+
 interface LocalDatabase {
   settings: AppSettings;
   boilers: BoilerOption[];
@@ -107,19 +125,106 @@ interface LocalDatabase {
   deleted_history_ids?: string[];
   audit_logs: Array<{ id: string; action: string; details: string; created_at: string }>;
   admin_session?: { token: string; expires_at: number };
+  registered_devices?: DeviceRecord[];
 }
 
 const nowIso = () => new Date().toISOString();
 const SERVER_BOOT_TIME = nowIso();
 const SERVER_BUILD_ID = `build_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
+interface PresenceSession {
+  sessionId: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  model: string;
+  os: string;
+  browser: string;
+  location: string;
+  ip: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+  isStandalone: boolean;
+  firstSeen: string;
+  lastPing: number;
+  kicked: boolean;
+}
+
+const activePresenceSessions = new Map<string, PresenceSession>();
+const kickedSessionIds = new Map<string, number>();
+
+function getActiveDevicesCount(): number {
+  const cutoff = Date.now() - 45_000;
+  let count = 0;
+  for (const session of activePresenceSessions.values()) {
+    if (!session.kicked && session.lastPing >= cutoff) {
+      count++;
+    }
+  }
+  return Math.max(1, count);
+}
+
+function pruneInactivePresenceSessions() {
+  const pruneCutoff = Date.now() - 300_000;
+  for (const [id, session] of activePresenceSessions.entries()) {
+    if (session.lastPing < pruneCutoff) {
+      activePresenceSessions.delete(id);
+    }
+  }
+}
+
 const DEFAULT_GAS_WEBAPP_URL =
   'https://script.google.com/macros/s/AKfycbxKwScnPCoy88EroenTupGnkcXpAC-cZma6VYRFWyQ0iTjCrsLFK_NDpT8YZADMis9X/exec';
+
+
+function getPackageVersion(): string {
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      if (typeof pkg.version === 'string' && pkg.version.trim()) {
+        return pkg.version.trim();
+      }
+    }
+  } catch {}
+  return '3.26.0';
+}
+
+function compareSemver(a: string, b: string): number {
+  const pa = (a || '').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = (b || '').split('.').map(n => parseInt(n, 10) || 0);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na > nb) return 1;
+    if (na < nb) return -1;
+  }
+  return 0;
+}
+
+async function saveAppVersionToSupabase(version: string) {
+  if (!SUPABASE_URL || !SB_HEADERS.apikey) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/system_settings?setting_key=eq.app_version`, {
+      method: 'PATCH',
+      headers: {
+        ...SB_HEADERS,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        setting_value: { value: version },
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  } catch (err) {
+    console.warn('Failed to update app_version in Supabase:', err);
+  }
+}
 
 const DEFAULT_DB: LocalDatabase = {
   settings: {
     site_name: 'Boiler Chemical',
-    app_version: '3.20.0',
+    app_version: getPackageVersion(),
     developer_name: 'Weevanh Khambounheuang',
     copyright_name: 'Weevanh Khambounheuang',
     department_name: 'แผนกบอยเลอร์ (Steam Boiler Department)',
@@ -136,7 +241,6 @@ const DEFAULT_DB: LocalDatabase = {
       allow_history_delete: true,
       allow_share: true,
       allow_chemical_info: true,
-      allow_sheet_sync: true,
     },
     app_enabled: true,
     bg_enabled: false,
@@ -183,6 +287,7 @@ const DEFAULT_DB: LocalDatabase = {
   history: [],
   deleted_history_ids: [],
   audit_logs: [],
+  registered_devices: [],
 };
 
 function normalizeBoilerDisplayName(name: string): string {
@@ -286,16 +391,28 @@ function loadDb(): LocalDatabase {
         ? DEFAULT_GAS_WEBAPP_URL
         : savedGasUrl;
 
+    const currentPkgVersion = getPackageVersion();
+    const storedVersion = parsed.settings?.app_version?.trim() || '';
+    const resolvedVersion =
+      storedVersion && compareSemver(storedVersion, currentPkgVersion) > 0
+        ? storedVersion
+        : currentPkgVersion;
+
     return {
       settings: {
         ...DEFAULT_DB.settings,
         ...(parsed.settings || {}),
+        app_version: resolvedVersion,
         gas_webapp_url: resolvedGasUrl,
         admin_pin: parsed.settings?.admin_pin === '1234' ? '' : (parsed.settings?.admin_pin || ''),
-        permissions: {
-          ...DEFAULT_DB.settings.permissions,
-          ...(parsed.settings?.permissions || {}),
-        },
+        permissions: (() => {
+          const perms = {
+            ...DEFAULT_DB.settings.permissions,
+            ...(parsed.settings?.permissions || {}),
+          };
+          delete (perms as Record<string, unknown>).allow_sheet_sync;
+          return perms;
+        })(),
       },
       boilers: cleanBoilers,
       chemicals:
@@ -305,6 +422,7 @@ function loadDb(): LocalDatabase {
       history: cleanHistory,
       deleted_history_ids: deletedIdsList,
       audit_logs: Array.isArray(parsed.audit_logs) ? parsed.audit_logs : DEFAULT_DB.audit_logs,
+      registered_devices: Array.isArray(parsed.registered_devices) ? parsed.registered_devices : [],
     };
   } catch (err) {
     console.error('Error loading local boiler store:', err);
@@ -413,73 +531,6 @@ function getAllExpectedChemicals(chemicals: ChemicalConfig[]): string[] {
   return Array.from(cols);
 }
 
-async function mirrorToGoogleSheet(url: string, action: string, payload: unknown, dbRef?: LocalDatabase) {
-  const targetUrl = (url || DEFAULT_GAS_WEBAPP_URL).trim();
-  if (!targetUrl || !targetUrl.startsWith('https://script.google.com/')) return false;
-  try {
-    const currentDb = dbRef || loadDb();
-    const allSheets = getAllExpectedSheets(currentDb.boilers);
-    const allChemicals = getAllExpectedChemicals(currentDb.chemicals);
-
-    let enriched: Record<string, unknown> = {
-      action,
-      allSheets,
-      allChemicals,
-      appendNewRow: true,
-      payload,
-      timestamp: nowIso(),
-    };
-
-    if (action === 'ADD_CALCULATION' && payload && typeof payload === 'object') {
-      const rec = payload as CalculationHistoryRecord;
-      const bName = String(rec.boiler_name || '').trim();
-      const targetSheets = resolveBoilerSheetNames(bName);
-
-      const resultsByChem: Record<string, number | string> = {};
-      for (const item of rec.details || []) {
-        const val = extractNumericResult(item.report);
-        const lower = item.name.trim().toLowerCase();
-        if (lower === 'tce-2138' || lower.includes('tce')) {
-          resultsByChem['TCE-2138'] = val;
-        } else if (lower === 'mcc-n' || lower.includes('mcc')) {
-          resultsByChem['MCC-N'] = val;
-        } else if (lower === 'polytreat-srb' || lower.includes('srb') || lower.includes('poly')) {
-          resultsByChem['Polytreat-SRB'] = val;
-        } else {
-          resultsByChem[item.name.trim()] = val;
-        }
-      }
-
-      enriched = {
-        action: 'ADD_CALCULATION',
-        recordId: rec.id || rec.client_record_id || `${Date.now()}`,
-        targetSheets,
-        allSheets,
-        allChemicals,
-        boilerName: bName,
-        cleanDate: formatSheetDateBkk(rec.calculated_at, false),
-        date: formatSheetDateBkk(rec.calculated_at, false),
-        results: resultsByChem,
-        details: (rec.details || []).map((d) => ({
-          name: d.name,
-          result: extractNumericResult(d.report),
-        })),
-        payload,
-        timestamp: nowIso(),
-      };
-    }
-
-    const res = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(enriched),
-    });
-    return res.ok;
-  } catch (err) {
-    console.warn('Google Apps Script mirror warning:', err);
-    return false;
-  }
-}
 
 async function ensureSupabaseSessionToken(db: LocalDatabase, token?: string): Promise<string> {
   if (token && !token.startsWith('admin_') && !token.startsWith('sb_local_')) {
@@ -707,7 +758,14 @@ async function syncFromSupabase(db: LocalDatabase): Promise<{ online: boolean; p
         db.settings.site_name = cfg.site_name.trim();
       }
       if (typeof cfg.app_version === 'string' && cfg.app_version.trim()) {
-        db.settings.app_version = cfg.app_version.trim();
+        const remoteVer = cfg.app_version.trim();
+        const pkgVer = getPackageVersion();
+        if (compareSemver(remoteVer, pkgVer) >= 0) {
+          db.settings.app_version = remoteVer;
+        } else {
+          db.settings.app_version = pkgVer;
+          saveAppVersionToSupabase(pkgVer).catch(() => {});
+        }
       }
       if (typeof cfg.preview_image_url === 'string') {
         db.settings.preview_image_url = cfg.preview_image_url.trim();
@@ -729,8 +787,13 @@ async function syncFromSupabase(db: LocalDatabase): Promise<{ online: boolean; p
                 : valObj && typeof valObj === 'object' && typeof valObj.value === 'string'
                 ? valObj.value
                 : '';
-            if (extracted.trim()) {
-              db.settings.app_version = extracted.trim();
+            const remoteVer = extracted.trim();
+            const pkgVer = getPackageVersion();
+            if (remoteVer && compareSemver(remoteVer, pkgVer) >= 0) {
+              db.settings.app_version = remoteVer;
+            } else {
+              db.settings.app_version = pkgVer;
+              saveAppVersionToSupabase(pkgVer).catch(() => {});
             }
           } else if (row.setting_key === 'site_name') {
             const valObj = row.setting_value as { value?: string } | string | null;
@@ -947,6 +1010,7 @@ async function startServer() {
       supabaseOnline: online,
       supabaseUrl: SUPABASE_URL,
       keepAliveLease: lease,
+      activeUsersCount: getActiveDevicesCount(),
       settings: {
         ...db.settings,
         admin_pin: undefined,
@@ -958,6 +1022,254 @@ async function startServer() {
       history: db.history,
       audit_logs: db.audit_logs.slice(0, 30),
       serverTime: nowIso(),
+    });
+  });
+
+  // PRESENCE: Device Ping (Heartbeat every 15-20s from active clients)
+  app.post('/api/presence/ping', (req, res) => {
+    pruneInactivePresenceSessions();
+    const body = req.body || {};
+    const sessionId = String(body.sessionId || '').trim();
+    if (!sessionId) {
+      return res.status(400).json({ ok: false, error: 'Missing sessionId' });
+    }
+
+    const rawIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '';
+    const cleanIp = rawIp.replace(/^::ffff:/, '');
+    let location = 'ไทย (Thailand)';
+    if (
+      cleanIp === '127.0.0.1' ||
+      cleanIp === '::1' ||
+      cleanIp.startsWith('10.') ||
+      cleanIp.startsWith('192.168.')
+    ) {
+      location = 'เครือข่ายภายใน (Local/LAN)';
+    }
+
+    const rawLat = body.latitude;
+    const rawLng = body.longitude;
+    const rawAcc = body.accuracy;
+    const lat = rawLat != null && Number.isFinite(Number(rawLat)) ? Number(rawLat) : null;
+    const lng = rawLng != null && Number.isFinite(Number(rawLng)) ? Number(rawLng) : null;
+    const acc = rawAcc != null && Number.isFinite(Number(rawAcc)) ? Number(rawAcc) : null;
+
+    if (lat != null && lng != null) {
+      location = `พิกัด GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+
+    const now = Date.now();
+    const kickedAt = kickedSessionIds.get(sessionId);
+    if (kickedAt && now - kickedAt < 300_000) {
+      return res.json({
+        ok: true,
+        kicked: true,
+        activeCount: getActiveDevicesCount(),
+      });
+    }
+
+    const existing = activePresenceSessions.get(sessionId);
+    if (existing?.kicked) {
+      return res.json({
+        ok: true,
+        kicked: true,
+        activeCount: getActiveDevicesCount(),
+      });
+    }
+
+    const sessionData: PresenceSession = {
+      sessionId,
+      deviceType: body.deviceType || 'mobile',
+      model: body.model || 'อุปกรณ์มือถือ',
+      os: body.os || 'ระบบปฏิบัติการ',
+      browser: body.browser || 'Web Browser',
+      location,
+      ip: cleanIp || '127.0.0.1',
+      latitude: lat,
+      longitude: lng,
+      accuracy: acc,
+      isStandalone: Boolean(body.isStandalone),
+      firstSeen: existing?.firstSeen || nowIso(),
+      lastPing: now,
+      kicked: false,
+    };
+    activePresenceSessions.set(sessionId, sessionData);
+
+    // Save permanently to registered_devices in Database
+    try {
+      const db = loadDb();
+      if (!Array.isArray(db.registered_devices)) {
+        db.registered_devices = [];
+      }
+
+      const existingIdx = db.registered_devices.findIndex((d) => d.sessionId === sessionId);
+      if (existingIdx >= 0) {
+        const prev = db.registered_devices[existingIdx];
+        db.registered_devices[existingIdx] = {
+          ...prev,
+          deviceType: sessionData.deviceType,
+          model: sessionData.model,
+          os: sessionData.os,
+          browser: sessionData.browser,
+          location: sessionData.location,
+          ip: sessionData.ip,
+          latitude: lat ?? prev.latitude ?? null,
+          longitude: lng ?? prev.longitude ?? null,
+          accuracy: acc ?? prev.accuracy ?? null,
+          isStandalone: sessionData.isStandalone,
+          lastPing: now,
+          lastPingIso: new Date(now).toISOString(),
+          kicked: false,
+        };
+      } else {
+        db.registered_devices.push({
+          sessionId,
+          deviceType: sessionData.deviceType,
+          model: sessionData.model,
+          os: sessionData.os,
+          browser: sessionData.browser,
+          location: sessionData.location,
+          ip: sessionData.ip,
+          latitude: lat,
+          longitude: lng,
+          accuracy: acc,
+          isStandalone: sessionData.isStandalone,
+          firstSeen: nowIso(),
+          lastPing: now,
+          lastPingIso: new Date(now).toISOString(),
+          kicked: false,
+        });
+      }
+      saveDb(db);
+    } catch (_dbErr) {
+      // Ignore
+    }
+
+    return res.json({
+      ok: true,
+      kicked: false,
+      activeCount: getActiveDevicesCount(),
+    });
+  });
+
+  // PRESENCE: Get Registered & Active Devices for Admin Settings (Persistent history)
+  app.get('/api/presence/devices', (_req, res) => {
+    pruneInactivePresenceSessions();
+    const db = loadDb();
+    const cutoff = Date.now() - 45_000;
+    const registered = Array.isArray(db.registered_devices) ? db.registered_devices : [];
+
+    const devices = registered
+      .map((d) => {
+        const isKicked = kickedSessionIds.has(d.sessionId);
+        const isOnline = !isKicked && d.lastPing >= cutoff;
+        return {
+          ...d,
+          lastPingIso: new Date(d.lastPing).toISOString(),
+          isOnline,
+        };
+      })
+      .sort((a, b) => {
+        if (a.isOnline && !b.isOnline) return -1;
+        if (!a.isOnline && b.isOnline) return 1;
+        return b.lastPing - a.lastPing;
+      });
+
+    const activeCount = devices.filter((d) => d.isOnline).length;
+    return res.json({
+      ok: true,
+      activeCount: Math.max(1, activeCount),
+      devices,
+    });
+  });
+
+  // PRESENCE: Kick / Disconnect Device (Admin only)
+  app.post('/api/presence/kick', (req, res) => {
+    const { sessionId } = req.body || {};
+    if (!sessionId) {
+      return res.status(400).json({ ok: false, error: 'Missing sessionId' });
+    }
+
+    kickedSessionIds.set(sessionId, Date.now());
+    const session = activePresenceSessions.get(sessionId);
+    if (session) {
+      session.kicked = true;
+      activePresenceSessions.delete(sessionId);
+    }
+
+    const db = loadDb();
+    if (Array.isArray(db.registered_devices)) {
+      const target = db.registered_devices.find((d) => d.sessionId === sessionId);
+      if (target) {
+        target.kicked = true;
+      }
+    }
+    addAuditLog(db, 'KICK_DEVICE', `ตัดการเชื่อมต่ออุปกรณ์ ${session?.model || sessionId}`);
+    saveDb(db);
+
+    return res.json({
+      ok: true,
+      message: 'ตัดการเชื่อมต่ออุปกรณ์เรียบร้อยแล้ว',
+      activeCount: getActiveDevicesCount(),
+    });
+  });
+
+  // PRESENCE: Delete Device Record Permanently from System (Admin only)
+  app.delete('/api/presence/devices/:sessionId', (req, res) => {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      return res.status(400).json({ ok: false, error: 'Missing sessionId' });
+    }
+
+    const db = loadDb();
+    if (!Array.isArray(db.registered_devices)) {
+      db.registered_devices = [];
+    }
+
+    const target = db.registered_devices.find((d) => d.sessionId === sessionId);
+    db.registered_devices = db.registered_devices.filter((d) => d.sessionId !== sessionId);
+    activePresenceSessions.delete(sessionId);
+    kickedSessionIds.set(sessionId, Date.now());
+
+    if (target) {
+      addAuditLog(db, 'DELETE_DEVICE_RECORD', `ลบประวัติอุปกรณ์ ${target.model} (${target.os}) ออกจากระบบ`);
+    }
+    saveDb(db);
+
+    return res.json({
+      ok: true,
+      message: 'ลบประวัติอุปกรณ์เรียบร้อยแล้ว',
+      activeCount: getActiveDevicesCount(),
+    });
+  });
+
+  app.post('/api/presence/delete', (req, res) => {
+    const { sessionId } = req.body || {};
+    if (!sessionId) {
+      return res.status(400).json({ ok: false, error: 'Missing sessionId' });
+    }
+
+    const db = loadDb();
+    if (!Array.isArray(db.registered_devices)) {
+      db.registered_devices = [];
+    }
+
+    const target = db.registered_devices.find((d) => d.sessionId === sessionId);
+    db.registered_devices = db.registered_devices.filter((d) => d.sessionId !== sessionId);
+    activePresenceSessions.delete(sessionId);
+    kickedSessionIds.set(sessionId, Date.now());
+
+    if (target) {
+      addAuditLog(db, 'DELETE_DEVICE_RECORD', `ลบประวัติอุปกรณ์ ${target.model} (${target.os}) ออกจากระบบ`);
+    }
+    saveDb(db);
+
+    return res.json({
+      ok: true,
+      message: 'ลบประวัติอุปกรณ์เรียบร้อยแล้ว',
+      activeCount: getActiveDevicesCount(),
     });
   });
 
@@ -1087,11 +1399,6 @@ async function startServer() {
       db.history = deduplicateHistory([newRecord, ...db.history], deletedSet);
       saveDb(db);
 
-      if (db.settings.permissions.allow_sheet_sync !== false) {
-        mirrorToGoogleSheet(db.settings.gas_webapp_url, 'ADD_CALCULATION', newRecord, db).catch((err) =>
-          console.warn('Background Google Sheet mirror error:', err)
-        );
-      }
 
       return res.json({
         ok: true,
@@ -1399,9 +1706,6 @@ async function startServer() {
       addAuditLog(db, 'UPDATE_SETTINGS', `อัปเดตการตั้งค่าระบบ (${db.settings.site_name} v${db.settings.app_version})`);
       saveDb(db);
 
-      mirrorToGoogleSheet(db.settings.gas_webapp_url, 'UPDATE_SETTINGS', db.settings).catch((err) =>
-        console.warn('Background Google Sheet mirror error:', err)
-      );
 
       return res.json({
         ok: true,
@@ -1594,11 +1898,6 @@ async function startServer() {
       });
     }
     saveDb(db);
-    if (db.settings.permissions.allow_sheet_sync !== false) {
-      mirrorToGoogleSheet(db.settings.gas_webapp_url, 'SYNC_STRUCTURE', { boilers: db.boilers }, db).catch((err) =>
-        console.warn('Background Google Sheet mirror error:', err)
-      );
-    }
     return res.json({ ok: true, boilers: db.boilers, audit_logs: db.audit_logs.slice(0, 30) });
   });
 
@@ -1768,9 +2067,6 @@ async function startServer() {
       };
       db.chemicals.push(newChem);
       addAuditLog(db, 'ADD_CHEMICAL', `เพิ่มสารเคมีใหม่ ${cleanName} (÷ ${numDiv})`);
-      mirrorToGoogleSheet(db.settings.gas_webapp_url, 'UPSERT_CHEMICAL', newChem).catch((err) =>
-        console.warn('Background Google Sheet mirror error:', err)
-      );
     }
 
     await debouncedSyncFromSupabase(db, true);
@@ -1788,11 +2084,6 @@ async function startServer() {
       });
     }
     saveDb(db);
-    if (db.settings.permissions.allow_sheet_sync !== false) {
-      mirrorToGoogleSheet(db.settings.gas_webapp_url, 'SYNC_STRUCTURE', { chemicals: db.chemicals }, db).catch((err) =>
-        console.warn('Background Google Sheet mirror error:', err)
-      );
-    }
     return res.json({ ok: true, chemicals: db.chemicals, audit_logs: db.audit_logs.slice(0, 30) });
   });
 

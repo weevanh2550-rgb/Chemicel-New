@@ -86,13 +86,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDismiss, isManualP
         background: 'linear-gradient(180deg, #024368 0%, #024368 22%, #025785 48%, #0369a1 72%, #081b33 100%)',
       }}
     >
-      {/* Top Status Bar Canopy: กลืนแถบด้านบน (สัญญาณ, เวลา, แบตเตอรี่) ให้เป็นสีน้ำเงินเข้มเนียนกริบ 100% ไม่มีรอยต่อ */}
-      <div
-        className="absolute top-0 left-0 right-0 h-44 pointer-events-none z-30"
-        style={{
-          background: 'linear-gradient(180deg, #024368 0%, #024368 75%, rgba(2, 67, 104, 0) 100%)',
-        }}
-      />
       {/* Background: ตกแต่งเอฟเฟกต์สารเคมีสุดสวยงาม (Chemical Fluid, Molecular Rings & Effervescence Bubbles) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {/* คลื่นของเหลวสารเคมีสีคราม-มรกต เรืองแสงไหวพริบนุ่มนวล */}
